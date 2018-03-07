@@ -222,7 +222,7 @@ def exportICS(loginUsername, loginPassword, nowWeekNo, fileName):
             startTime += timeTable[startPeriod][0]
             endTime += timeTable[endPeriod][1]
             
-            description_str = "课程编号：%s|考试考查：%s|备注：%s|教师：%s".decode("utf-8") % (course['courseno'], course['examtype'], course['note'], course['tutor'])
+            description_str = "课程编号：%s | 考试考查：%s | 备注：%s | 教师：%s | 学分：%s | 课程性质：%s | 时间地点：%s | 校区：%s".decode("utf-8") % (course['courseno'], course['examtype'], course['note'], course['tutor'], course['score'], course['compulsory'], u"；".join(course['timeplace']), course['campus'])
             startTime_str = startTime.strftime(datetime_Format)
             endTime_str = endTime.strftime(datetime_Format)
 
