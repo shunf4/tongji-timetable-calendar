@@ -40,10 +40,32 @@ LOCATION:%(location)s
 RRULE:FREQ=WEEKLY;COUNT=%(repeatcount)d;INTERVAL=%(interval)d;BYDAY=%(byday)s%(wkstsu)s
 SUMMARY:%(coursename)s
 UID:%(uid)s
+
+BEGIN:VALARM
+TRIGGER:-PT10M
+DESCRIPTION:要上课啦
+ACTION:DISPLAY
+END:VALARM
+
+END:VEVENT
+'''.decode("utf-8")
+
+no_Alarm_No_Repeat_Allday_Event_Format = '''
+BEGIN:VEVENT
+CLASS:PUBLIC
+DESCRIPTION:%(description)s\n
+DTSTART;VALUE=DATE:%(starttime)s
+DTEND;VALUE=DATE:%(endtime)s
+DTSTAMP:%(stamptime)s
+SUMMARY:%(summary)s
+UID:%(uid)s
+X-FUNAMBOL-ALLDAY:1
+X-MICROSOFT-CDO-ALLDAYEVENT:TRUE
 END:VEVENT
 '''.decode("utf-8")
 
 datetime_Format = "%Y%m%dT%H%M%S"
+onlydate_Format = "%Y%m%d"
 
 timeTable = [
     (datetime.timedelta(), datetime.timedelta()),
@@ -124,6 +146,10 @@ class Query4m3(object):
         
         # now we jump back
         SAMLVarText = r.text
+
+        if len(self._RE_SAMLResponse.findall(SAMLVarText)) == 0:
+            raise ValueError, u"Login Failed. ID or password error?"
+
         SAMLVar = {"SAMLResponse": self._RE_SAMLResponse.findall(SAMLVarText)[0], "RelayState": self._RE_RelayState.findall(SAMLVarText)[0]}
         headers = dict(self.headers).update({"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"})
         self.w4m3Session.post(self.HOST_4M3 + "/eams/saml/SAMLAssertionConsumer", SAMLVar, headers = headers, proxies = self.proxies)
@@ -228,9 +254,27 @@ def exportICS(loginUsername, loginPassword, nowWeekNo, fileName):
 
             uid_str = "%s-%s-%s@rivage.tk" % (startTime_str, course['courseno'], loginUsername)
 
+            if len(infos) < 5:
+                infos.append("")
+
             agendaStr = event_Format % {"description": description_str, "starttime": startTime_str, "endtime": endTime_str, "stamptime": dt.now().strftime(datetime_Format), "location": infos[4], "repeatcount": repeatTimes, "interval": interval, "byday": weekdayLetter[weekday], "wkstsu": ";WKST=" + weekdayLetter[0], "coursename": course['coursename'], "uid": uid_str}
 
             coursesAgendas.append(agendaStr)
+
+    for i in range(19):
+        startTime = firstMonday + datetime.timedelta(weeks = i, hours = 8)
+        endTime = firstMonday + datetime.timedelta(weeks = i, hours = 17)
+        
+        summary_str = "第 %d 周".decode("utf-8") % (i + 1)
+        description_str = "第 %d 周开始了！好好加油哦！".decode("utf-8") % (i + 1)
+        startTime_str = startTime.strftime(onlydate_Format)
+        endTime_str = endTime.strftime(onlydate_Format)
+
+        uid_str = "%s-week%d-%s@rivage.tk" % (startTime_str, i+1, loginUsername)
+
+        agendaStr = no_Alarm_No_Repeat_Allday_Event_Format % {"description": description_str, "starttime": startTime_str, "endtime": endTime_str, "stamptime": dt.now().strftime(datetime_Format), "summary": summary_str, "uid": uid_str}
+
+        coursesAgendas.append(agendaStr)
 
     iCSStr = cal_Format % {"year": termStr, "semester": seasonNo, "events": u'\n'.join(coursesAgendas)}
 
@@ -239,10 +283,10 @@ def exportICS(loginUsername, loginPassword, nowWeekNo, fileName):
     f.close()
 
 if __name__ == "__main__":
-    loginUsername = raw_input("统一身份认证名称（学号）：")
-    loginPassword = getpass.getpass("密码（自动隐藏）：")
-    nowWeekNo = int(raw_input("这周是第几周？(周日算一周的结束)输入数字："))
+    loginUsername = raw_input("Unified Identification(ID):")
+    loginPassword = getpass.getpass("Password(Invisible input):")
+    nowWeekNo = int(raw_input("Week Number(Sunday is the last day of a week):"))
     fileName = "./%s.ics" % loginUsername
     exportICS(loginUsername, loginPassword, nowWeekNo, fileName)
-    print "生成了 " + fileName + "。"
+    print("Generated " + fileName + ".")
 

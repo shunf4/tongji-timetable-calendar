@@ -1,4 +1,6 @@
 /neverSync/
 /output/
 /.vscode/
-
+/**/*.pyc
+/_gsdata_/
+/**/*.ics
