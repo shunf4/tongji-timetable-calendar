@@ -42,7 +42,7 @@ SUMMARY:%(coursename)s
 UID:%(uid)s
 
 BEGIN:VALARM
-TRIGGER:-PT10M
+TRIGGER;RELATED=START:-PT15M
 DESCRIPTION:要上课啦
 ACTION:DISPLAY
 END:VALARM
@@ -227,39 +227,47 @@ def exportICS(loginUsername, loginPassword, nowWeekNo, fileName):
 
     coursesAgendas = []
     for i, course in enumerate(courses):
-        for j, timeplace in enumerate(course['timeplace']):
-            infos = timeplace.split(" ")
-            weekday = weekdayChar.index(infos[1][-1])
-            startWeek, endWeek = tuple([int(x) for x in infos[3][infos[3].index("[") + 1:infos[3].index("]")].split('-')])
-            startTime = firstMonday + datetime.timedelta(weeks = (startWeek - 1))
-            if infos[3][0] != u'[':
-                fortnightOdd = (infos[3][0] == "单".decode("utf-8"))
-                startWeekDelta = fortnightOdd ^ (startWeek % 2)
-                endWeekDelta = fortnightOdd ^ (endWeek % 2)
-                startTime = startTime + datetime.timedelta(weeks = startWeekDelta)
-                repeatTimes = ((endWeek - endWeekDelta) - (startWeek + startWeekDelta)) / 2 + 1
-                interval = 2
-            else:
-                repeatTimes = endWeek - startWeek + 1
-                interval = 1
-            startTime += datetime.timedelta(days = weekday)
-            startPeriod, endPeriod = tuple([int(x) for x in infos[2].split("-")])
-            endTime = startTime
-            startTime += timeTable[startPeriod][0]
-            endTime += timeTable[endPeriod][1]
-            
-            description_str = "课程编号：%s | 考试考查：%s | 备注：%s | 教师：%s | 学分：%s | 课程性质：%s | 时间地点：%s | 校区：%s".decode("utf-8") % (course['courseno'], course['examtype'], course['note'], course['tutor'], course['score'], course['compulsory'], u"；".join(course['timeplace']), course['campus'])
-            startTime_str = startTime.strftime(datetime_Format)
-            endTime_str = endTime.strftime(datetime_Format)
+        try:
+            for j, timeplace in enumerate(course['timeplace']):
+                infos = timeplace.strip().split(" ")
+                if len(infos) > 5:
+                    print "Not formatted %s" % ",".join(infos)
+                    break
 
-            uid_str = "%s-%s-%s@rivage.tk" % (startTime_str, course['courseno'], loginUsername)
+                weekday = weekdayChar.index(infos[1][-1])
+                startWeek, endWeek = tuple([int(x) for x in infos[3][infos[3].index("[") + 1:infos[3].index("]")].split('-')])
+                startTime = firstMonday + datetime.timedelta(weeks = (startWeek - 1))
+                if infos[3][0] != u'[':
+                    fortnightOdd = (infos[3][0] == "单".decode("utf-8"))
+                    startWeekDelta = fortnightOdd ^ (startWeek % 2)
+                    endWeekDelta = fortnightOdd ^ (endWeek % 2)
+                    startTime = startTime + datetime.timedelta(weeks = startWeekDelta)
+                    repeatTimes = ((endWeek - endWeekDelta) - (startWeek + startWeekDelta)) / 2 + 1
+                    interval = 2
+                else:
+                    repeatTimes = endWeek - startWeek + 1
+                    interval = 1
+                startTime += datetime.timedelta(days = weekday)
+                startPeriod, endPeriod = tuple([int(x) for x in infos[2].split("-")])
+                endTime = startTime
+                startTime += timeTable[startPeriod][0]
+                endTime += timeTable[endPeriod][1]
+                
+                description_str = "课程编号：%s | 考试考查：%s | 备注：%s | 教师：%s | 学分：%s | 课程性质：%s | 时间地点：%s | 校区：%s".decode("utf-8") % (course['courseno'], course['examtype'], course['note'], course['tutor'], course['score'], course['compulsory'], u"；".join(course['timeplace']), course['campus'])
+                startTime_str = startTime.strftime(datetime_Format)
+                endTime_str = endTime.strftime(datetime_Format)
 
-            if len(infos) < 5:
-                infos.append("")
+                uid_str = "%s-%s-%s@rivage.tk" % (startTime_str, course['courseno'], loginUsername)
 
-            agendaStr = event_Format % {"description": description_str, "starttime": startTime_str, "endtime": endTime_str, "stamptime": dt.now().strftime(datetime_Format), "location": infos[4], "repeatcount": repeatTimes, "interval": interval, "byday": weekdayLetter[weekday], "wkstsu": ";WKST=" + weekdayLetter[0], "coursename": course['coursename'], "uid": uid_str}
+                if len(infos) < 5:
+                    infos.append("")
 
-            coursesAgendas.append(agendaStr)
+                agendaStr = event_Format % {"description": description_str, "starttime": startTime_str, "endtime": endTime_str, "stamptime": dt.now().strftime(datetime_Format), "location": infos[4], "repeatcount": repeatTimes, "interval": interval, "byday": weekdayLetter[weekday], "wkstsu": ";WKST=" + weekdayLetter[0], "coursename": course['coursename'], "uid": uid_str}
+
+                coursesAgendas.append(agendaStr)
+        except Exception, e:
+            print "Error in %s" % ",".join(course['timeplace'])
+            print e
 
     for i in range(19):
         startTime = firstMonday + datetime.timedelta(weeks = i, hours = 8)
