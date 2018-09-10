@@ -109,7 +109,7 @@ class Query4m3(object):
     _RE_SAMLURL = re.compile(r';url=([^"]*)"')
     _RE_RelayState = re.compile(r'name="RelayState"\s*value="([\w\d\_\-]*)"')
     _RE_ID = re.compile(r'"ids","(\d+)"')
-    _RE_CoursesParse = re.compile(r'<tr>\s*<td>(?P<no>\d+)</td>\s*<td>\s*<a[^>]*>(?P<courseno>[\d\w]+)</a>\s*</td>\s*<td>\s*(?P<coursename>[^<]*)\s*</td>\s*<td>\s*(?P<compulsory>[^<]*)\s*</td>\s*<td>\s*(?P<examtype>[^<]*)\s*</td>\s*<td>\s*(?P<note>[^<]*)\s*</td>\s*<td>\s*(?P<score>[\d\.]*)\s*</td>\s*<td>\s*(?P<tutor>[^<]*)\s*</td>\s*<td>\s*(?P<timeplace>(?:[^<]|<\s*br\s*>)*)\s*</td>\s*<td>\s*(?P<campus>[^<]*)\s*</td>\s*<td>\s*<a[^>]*>[^>]*</a>\s*</td>\s*</tr>')
+    _RE_CoursesParse = re.compile(r'<tr>\s*<td>(?P<no>\d+)</td>\s*<td>\s*<a[^>]*>(?P<courseno>[\d\w]+)</a>\s*</td>\s*<td>\s*(?P<coursename>[^<\s]*)\s*(<font[^>]*>[^>]*>)?\s*</td>\s*<td>\s*(?P<compulsory>[^<]*)\s*</td>\s*<td>\s*(?P<examtype>[^<]*)\s*</td>\s*<td>\s*(?P<note>[^<]*)\s*</td>\s*<td>\s*(?P<score>[\d\.]*)\s*</td>\s*<td>\s*(?P<tutor>[^<]*)\s*</td>\s*<td>\s*(?P<timeplace>(?:[^<]|<\s*br\s*>)*)\s*</td>\s*<td>\s*(?P<campus>[^<]*)\s*</td>\s*<td>\s*<a[^>]*>[^>]*</a>\s*</td>\s*</tr>')
     HOST_4M3 = "http://4m3.tongji.edu.cn"
     HOST_IDS = "https://ids.tongji.edu.cn:8443"
 
