@@ -42,9 +42,9 @@ SUMMARY:%(coursename)s
 UID:%(uid)s
 
 BEGIN:VALARM
-TRIGGER;RELATED=START:-PT15M
-DESCRIPTION:要上课啦
 ACTION:DISPLAY
+DESCRIPTION:Go to classroom
+TRIGGER:-P25M
 END:VALARM
 
 END:VEVENT
@@ -293,7 +293,7 @@ def exportICS(loginUsername, loginPassword, nowWeekNo, fileName):
 if __name__ == "__main__":
     loginUsername = raw_input("Unified Identification(ID):")
     loginPassword = getpass.getpass("Password(Invisible input):")
-    nowWeekNo = int(raw_input("Week Number(Sunday is the last day of a week):"))
+    nowWeekNo = int(raw_input("Week Number now(Sunday is the last day of a week):"))
     fileName = "./%s.ics" % loginUsername
     exportICS(loginUsername, loginPassword, nowWeekNo, fileName)
     print("Generated " + fileName + ".")
